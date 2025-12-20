@@ -15,6 +15,19 @@ export const getPersons = async (limit = 10, offset = 0) => {
 };
 
 /**
+ * Busca uma pessoa específica pelo ID
+ * @param {number} id - ID da pessoa
+ * @returns {Promise<Object>} Objeto da pessoa
+ */
+export const getPerson = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/persons/${id}/`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch person');
+  }
+  return response.json();
+};
+
+/**
  * Cria uma nova pessoa
  * @param {Object} personData - Dados da pessoa (person_name, hobbies)
  * @returns {Promise<Object>} Objeto da pessoa criada

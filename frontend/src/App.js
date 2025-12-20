@@ -81,6 +81,18 @@ function App() {
     }
   };
 
+  const handleRefreshPerson = async (id) => {
+    try {
+      const personData = await import('./api').then(module => module.getPerson(id));
+
+      setPersons(prevPersons =>
+        prevPersons.map(p => p.id === id ? personData : p)
+      );
+    } catch (error) {
+      console.error('Error refreshing person:', error);
+    }
+  };
+
   const handlePrev = () => {
     if (hasPrev) {
       setOffset(Math.max(0, offset - PAGE_SIZE));
@@ -112,22 +124,22 @@ function App() {
       const searchLower = searchTerm.toLowerCase();
       filtered = persons.filter((person) => {
         const nameMatch = person.person_name?.toLowerCase().includes(searchLower);
-        
-        const hobbiesArray = Array.isArray(person.hobbies) 
-          ? person.hobbies 
+
+        const hobbiesArray = Array.isArray(person.hobbies)
+          ? person.hobbies
           : (person.hobbies ? [person.hobbies] : []);
         const hobbiesString = hobbiesArray.join(' ').toLowerCase();
         const hobbiesMatch = hobbiesString.includes(searchLower);
-        
+
         return nameMatch || hobbiesMatch;
       });
     }
 
     const sorted = [...filtered];
-    
+
     sorted.sort((a, b) => {
       let aValue, bValue;
-      
+
       if (sortBy === 'name') {
         aValue = a.person_name || '';
         bValue = b.person_name || '';
@@ -137,7 +149,7 @@ function App() {
         aValue = aHobbies.join(' ').toLowerCase();
         bValue = bHobbies.join(' ').toLowerCase();
       }
-      
+
       if (aValue < bValue) {
         return sortOrder === 'asc' ? -1 : 1;
       }
@@ -146,7 +158,7 @@ function App() {
       }
       return 0;
     });
-    
+
     return sorted;
   }, [persons, searchTerm, sortBy, sortOrder]);
 
@@ -181,6 +193,7 @@ function App() {
             persons={filteredAndSortedPersons}
             onEdit={handleEditPerson}
             onDelete={handleDeletePerson}
+            onRefreshPerson={handleRefreshPerson}
             onPrev={handlePrev}
             onNext={handleNext}
             hasPrev={hasPrev}

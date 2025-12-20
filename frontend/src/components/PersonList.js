@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import StatsCharts from './StatsCharts';
 
-function PersonList({ persons, onEdit, onDelete, onPrev, onNext, hasPrev, hasNext }) {
+function PersonList({ persons, onEdit, onDelete, onRefreshPerson, onPrev, onNext, hasPrev, hasNext }) {
   const [activeChartId, setActiveChartId] = useState(null);
 
   const toggleChart = (id) => {
-    setActiveChartId(activeChartId === id ? null : id);
+    if (activeChartId !== id) {
+      const person = persons.find(p => p.id === id);
+      if (person && !person.stats && onRefreshPerson) {
+        onRefreshPerson(id);
+      }
+      setActiveChartId(id);
+    } else {
+      setActiveChartId(null);
+    }
   };
 
   const formatHobbies = (hobbies) => {
