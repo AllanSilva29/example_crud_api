@@ -18,31 +18,41 @@ def calculate_person_stats(person_id):
     try:
         person = Person.objects.get(id=person_id)
         
-        def calculate_list_stats(raw_input):
-            if not raw_input:
-                return None
+        def parse_numbers(raw_text):
+            if not raw_text:
+                return []
             try:
-                numbers = [float(x.strip()) for x in raw_input.split(',') if x.strip()]
-                if not numbers:
-                    return None
-                
-                return {
-                    "media": statistics.mean(numbers),
-                    "variancia": statistics.variance(numbers) if len(numbers) > 1 else 0,
-                    "desvio": statistics.stdev(numbers) if len(numbers) > 1 else 0,
-                    "quantidade": len(numbers)
-                }
-            except (ValueError, statistics.StatisticsError):
-                return {"error": "Invalid data input"}
+                return [float(x.strip()) for x in raw_text.split(',') if x.strip()]
+            except ValueError:
+                return []
 
-        stats = {
-            "media": calculate_list_stats(person.media_raw),
-            "desvio": calculate_list_stats(person.desvio_raw)
-        }
+        media_vals = parse_numbers(person.media_raw)
+        variancia_vals = parse_numbers(person.variancia_raw)
+        desvio_vals = parse_numbers(person.desvio_raw)
+
+        results = {}
+
+        # Média Input -> Calcular Média
+        if media_vals:
+            results['media'] = statistics.mean(media_vals)
         
-        person.stats = stats
+        # Variância Input -> Calcular Variância
+        if variancia_vals:
+             if len(variancia_vals) > 1:
+                results['variancia'] = statistics.variance(variancia_vals)
+             else:
+                results['variancia'] = 0.0
+
+        # Desvio Padrão Input -> Calcular Desvio Padrão
+        if desvio_vals:
+            if len(desvio_vals) > 1:
+                results['desvio'] = statistics.stdev(desvio_vals)
+            else:
+                 results['desvio'] = 0.0
+
+        person.stats = results
         person.save(update_fields=['stats', 'modified_date'])
         
-        return f"Estatísticas calculadas para Pessoa {person_id}"
+        return f"Estatísticas calculadas para Pessoa {person_id}: {results}"
     except Person.DoesNotExist:
         return f"Pessoa {person_id} não encontrada"
