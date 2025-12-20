@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
+import StatsCharts from './StatsCharts';
 
 function PersonList({ persons, onEdit, onDelete, onPrev, onNext, hasPrev, hasNext }) {
+  const [activeChartId, setActiveChartId] = useState(null);
+
+  const toggleChart = (id) => {
+    setActiveChartId(activeChartId === id ? null : id);
+  };
+
   const formatHobbies = (hobbies) => {
     if (Array.isArray(hobbies)) {
       return JSON.stringify(hobbies);
@@ -19,45 +26,47 @@ function PersonList({ persons, onEdit, onDelete, onPrev, onNext, hasPrev, hasNex
             {persons.map((person) => (
               <li
                 key={person.id}
-                className="list-group-item d-flex justify-content-between"
+                className="list-group-item"
               >
-                <span>
-                  <strong>{person.person_name}</strong>
-                  <br />
-                  <small>Hobbies: {formatHobbies(person.hobbies)}</small>
-                  {person.stats && (
-                    <div className="mt-1 small">
-                      {person.stats.media && (
+                <div className="d-flex justify-content-between align-items-start">
+                  <span>
+                    <strong>{person.person_name}</strong>
+                    <br />
+                    <small>Hobbies: {formatHobbies(person.hobbies)}</small>
+                    {person.stats && (
+                      <div className="mt-1 small">
                         <div className="text-secondary">
-                          <strong>Média (Input):</strong> {person.stats.media.media?.toFixed(2)} |
-                          Var: {person.stats.media.variancia?.toFixed(2)} |
-                          Desv: {person.stats.media.desvio?.toFixed(2)}
+                          <strong>Média:</strong> {typeof person.stats.media === 'number' ? person.stats.media.toFixed(2) : (person.stats.media?.media?.toFixed(2) || 'N/A')} |
+                          <strong> Variância:</strong> {typeof person.stats.variancia === 'number' ? person.stats.variancia.toFixed(2) : 'N/A'} |
+                          <strong> Desvio Padrão:</strong> {typeof person.stats.desvio === 'number' ? person.stats.desvio.toFixed(2) : (person.stats.desvio?.desvio?.toFixed(2) || 'N/A')}
                         </div>
-                      )}
-                      {person.stats.desvio && (
-                        <div className="text-secondary">
-                          <strong>Desvio (Input):</strong> {person.stats.desvio.media?.toFixed(2)} |
-                          Var: {person.stats.desvio.variancia?.toFixed(2)} |
-                          Desv: {person.stats.desvio.desvio?.toFixed(2)}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </span>
-                <span>
-                  <button
-                    className="btn btn-sm btn-outline-secondary me-2"
-                    onClick={() => onEdit(person)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => onDelete(person.id)}
-                  >
-                    Delete
-                  </button>
-                </span>
+                      </div>
+                    )}
+                  </span>
+                  <span>
+                    <button
+                      className="btn btn-sm btn-outline-info me-2"
+                      onClick={() => toggleChart(person.id)}
+                    >
+                      {activeChartId === person.id ? 'Hide Charts' : 'Show Charts'}
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-secondary me-2"
+                      onClick={() => onEdit(person)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => onDelete(person.id)}
+                    >
+                      Delete
+                    </button>
+                  </span>
+                </div>
+                {activeChartId === person.id && person.stats && (
+                  <StatsCharts person={person} />
+                )}
               </li>
             ))}
           </ul>
